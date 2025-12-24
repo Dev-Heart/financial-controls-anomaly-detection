@@ -5,7 +5,7 @@ import sys
 import numpy as np
 
 # Ensure we can import from the scripts directory
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts"))
 from main import (
     detect_duplicate_payments,
     detect_unusual_timing,
@@ -47,7 +47,7 @@ def load_data(file):
 if uploaded_file is not None:
     df_raw = load_data(uploaded_file)
 else:
-    sample_path = os.path.join(os.path.dirname(__file__), "../data/sample_transactions.csv")
+    sample_path = os.path.join(os.path.dirname(__file__), "data/sample_transactions.csv")
     if os.path.exists(sample_path):
         df_raw = load_data(sample_path)
     else:

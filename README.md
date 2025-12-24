@@ -54,7 +54,7 @@ python3 scripts/main.py
 ### 4. Launch Interactive Dashboard
 Run the Streamlit app for a visual, interactive experience:
 ```bash
-streamlit run scripts/app.py
+streamlit run app.py
 ```
 
 ### 5. Run Tests
