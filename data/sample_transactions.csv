@@ -1,0 +1,8 @@
+transaction_id,date,amount,description,vendor,account,approved_by
+TXN001,2024-01-03,15000,Office Equipment Purchase,ABC Supplies,Capex,MJONES
+TXN002,2024-01-04,15000,Office Equipment Purchase,ABC Supplies,Capex,
+TXN003,2024-01-05,9999,Consulting Fees,XYZ Consulting,Professional Fees,SBROWN
+TXN004,2024-01-05,10000,Consulting Fees,XYZ Consulting,Professional Fees,SBROWN
+TXN005,2024-01-07,4500,Software Subscription,CloudSoft,Operating Expenses,MJONES
+TXN006,2024-01-08,4500,Software Subscription,CloudSoft,Operating Expenses,MJONES
+
