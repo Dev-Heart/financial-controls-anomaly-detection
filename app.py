@@ -38,6 +38,13 @@ def format_currency(val):
     else:
         return f"{currency}{val:.{decimal_points}f}"
 
+# State Management
+if "analysis_triggered" not in st.session_state:
+    st.session_state.analysis_triggered = False
+
+def reset_analysis():
+    st.session_state.analysis_triggered = False
+
 # Data Loading & Mapping
 def detect_columns(columns):
     """
@@ -59,16 +66,22 @@ def load_and_map_data(file):
         df = pd.read_csv(file)
         if df.empty:
             st.error("The uploaded CSV is empty.")
-            return None
+            return None, None
         
         st.sidebar.subheader("🗺️ Column Mapping")
-        st.sidebar.info("Map your CSV headers to the expected fields.")
+        st.sidebar.info("Map your CSV headers to the 'Forensic Essentials'.")
         
         auto_map = detect_columns(df.columns)
         
-        date_col = st.sidebar.selectbox("Date Column", df.columns, index=list(df.columns).index(auto_map["date"]) if auto_map["date"] in df.columns else 0)
-        amount_col = st.sidebar.selectbox("Amount Column", df.columns, index=list(df.columns).index(auto_map["amount"]) if auto_map["amount"] in df.columns else (1 if len(df.columns) > 1 else 0))
-        vendor_col = st.sidebar.selectbox("Vendor Column", df.columns, index=list(df.columns).index(auto_map["vendor"]) if auto_map["vendor"] in df.columns else (2 if len(df.columns) > 2 else 0))
+        date_col = st.sidebar.selectbox("📅 Date Column (When)", df.columns, 
+                                      index=list(df.columns).index(auto_map["date"]) if auto_map["date"] in df.columns else 0,
+                                      on_change=reset_analysis)
+        amount_col = st.sidebar.selectbox("💰 Amount Column (How Much)", df.columns, 
+                                        index=list(df.columns).index(auto_map["amount"]) if auto_map["amount"] in df.columns else (1 if len(df.columns) > 1 else 0),
+                                        on_change=reset_analysis)
+        vendor_col = st.sidebar.selectbox("👤 Payee / Entity (Who)", df.columns, 
+                                        index=list(df.columns).index(auto_map["vendor"]) if auto_map["vendor"] in df.columns else (2 if len(df.columns) > 2 else 0),
+                                        on_change=reset_analysis)
         
         # Critical: Transform for internal logic
         df_mapped = df[[date_col, amount_col, vendor_col]].copy()
@@ -88,51 +101,44 @@ def load_and_map_data(file):
         if df_mapped['date'].isna().any():
             st.sidebar.warning(f"⚠️ Some values in {date_col} could not be parsed as dates.")
         if df_mapped['amount'].isna().any():
-            st.sidebar.error(f"🚨 Non-numeric values found in {amount_col}. Analysis might be inaccurate.")
+            st.sidebar.error(f"🚨 Non-numeric values found in {amount_col}.")
             
-        return df_mapped.dropna(subset=['date', 'amount']) # Keep valid rows
+        return df_mapped.dropna(subset=['date', 'amount']), df # Return mapped and full raw
     except Exception as e:
         st.error(f"Error processing CSV: {e}")
-        return None
-
-# State Management
-if "analysis_triggered" not in st.session_state:
-    st.session_state.analysis_triggered = False
+        return None, None
 
 if uploaded_file is not None:
-    df_raw = load_and_map_data(uploaded_file)
-    # Reset analysis if a new file is uploaded or mapping changes (implicit via load_and_map_data)
+    df_raw, df_full = load_and_map_data(uploaded_file)
 else:
     sample_path = os.path.join(os.path.dirname(__file__), "data/sample_transactions.csv")
     if os.path.exists(sample_path):
-        df_raw = load_and_map_data(sample_path)
+        df_raw, df_full = load_and_map_data(sample_path)
     else:
         st.error("No data found. Please upload a CSV.")
         st.stop()
-
-# Helper to reset state when file changes
-def reset_analysis():
-    st.session_state.analysis_triggered = False
 
 if df_raw is None or df_raw.empty:
     st.info("👋 **Welcome! To begin the forensic analysis:**")
     st.markdown("""
     1. **Upload your CSV** in the sidebar.
-    2. **Check the Mapping**: Look at the sidebar 🗺️. Select the correct columns for Date, Amount, and Vendor.
+    2. **Map the Essentials**: Look at the sidebar 🗺️. Select the correct columns for Date, Amount, and Payee.
     3. **Verify Date Format**: Ensure your date column is in a standard format (e.g., YYYY-MM-DD).
     """)
     if uploaded_file:
-        st.error(f"🚨 **Mapping Error**: 0 valid rows found in '{uploaded_file.name}'. Please check your column selections.")
+        st.error(f"🚨 **Mapping Error**: 0 valid rows found in '{uploaded_file.name}'. Please check your column selections in the sidebar.")
     st.stop()
 
 # --- PRE-ANALYSIS PREVIEW ---
 if not st.session_state.analysis_triggered:
-    st.success(f"✅ Data Mapped: **{len(df_raw)}** valid transactions ready for analysis.")
-    st.subheader("📋 Data Preview (First 5 Rows)")
-    st.dataframe(df_raw.head(), use_container_width=True)
+    st.success(f"✅ Mapping OK: **{len(df_raw)}** valid transactions identified.")
+    
+    with st.expander("🔍 **Data Inspector** (Review all columns in your file)", expanded=True):
+        st.write("Use this table to find which headers contain your transaction dates and amounts.")
+        st.dataframe(df_full.head(10), use_container_width=True)
     
     st.markdown("---")
-    st.info("💡 **Ready?** Click the button below to run the forensic detectors.")
+    st.warning("🕵️ **Action Required**: Review the mapping in the sidebar, then click below to launch the detectors.")
     if st.button("🚀 Run Forensic Analysis", use_container_width=True, type="primary"):
         st.session_state.analysis_triggered = True
         st.rerun()
