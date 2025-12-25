@@ -95,39 +95,59 @@ def load_and_map_data(file):
         st.error(f"Error processing CSV: {e}")
         return None
 
+# State Management
+if "analysis_triggered" not in st.session_state:
+    st.session_state.analysis_triggered = False
+
 if uploaded_file is not None:
     df_raw = load_and_map_data(uploaded_file)
+    # Reset analysis if a new file is uploaded or mapping changes (implicit via load_and_map_data)
 else:
     sample_path = os.path.join(os.path.dirname(__file__), "data/sample_transactions.csv")
     if os.path.exists(sample_path):
-        # Sample file is already structured correctly, but we use the same loader for consistency
         df_raw = load_and_map_data(sample_path)
     else:
         st.error("No data found. Please upload a CSV.")
         st.stop()
 
+# Helper to reset state when file changes
+def reset_analysis():
+    st.session_state.analysis_triggered = False
+
 if df_raw is None or df_raw.empty:
     st.info("👋 **Welcome! To begin the forensic analysis:**")
     st.markdown("""
     1. **Upload your CSV** in the sidebar.
-    2. **Check the Mapping**: Look at the sidebar 🗺️. If you see warnings about dates or amounts, you likely need to select different columns.
-    3. **Verify Date Format**: Ensure your date column is in a standard format (e.g., YYYY-MM-DD or MM/DD/YYYY).
+    2. **Check the Mapping**: Look at the sidebar 🗺️. Select the correct columns for Date, Amount, and Vendor.
+    3. **Verify Date Format**: Ensure your date column is in a standard format (e.g., YYYY-MM-DD).
     """)
     if uploaded_file:
-        st.error(f"🚨 **Mapping Error**: 0 valid rows found in '{uploaded_file.name}' after mapping and cleanup. Please check your column selections in the sidebar.")
+        st.error(f"🚨 **Mapping Error**: 0 valid rows found in '{uploaded_file.name}'. Please check your column selections.")
     st.stop()
-else:
-    st.success(f"✅ Successfully loaded and mapped **{len(df_raw)}** valid transactions.")
 
-# Analysis execution
-duplicates = detect_duplicate_payments(df_raw)
-unusual_timing = detect_unusual_timing(df_raw)
-round_num = detect_round_number_abuse(df_raw)
-threshold_flags = detect_threshold_avoidance(df_raw, threshold=threshold)
-benford_data = analyze_benford(df_raw)
-fuzzy_vendors = detect_fuzzy_duplicates(df_raw)
+# --- PRE-ANALYSIS PREVIEW ---
+if not st.session_state.analysis_triggered:
+    st.success(f"✅ Data Mapped: **{len(df_raw)}** valid transactions ready for analysis.")
+    st.subheader("📋 Data Preview (First 5 Rows)")
+    st.dataframe(df_raw.head(), use_container_width=True)
+    
+    st.markdown("---")
+    st.info("💡 **Ready?** Click the button below to run the forensic detectors.")
+    if st.button("🚀 Run Forensic Analysis", use_container_width=True, type="primary"):
+        st.session_state.analysis_triggered = True
+        st.rerun()
+    st.stop()
 
-# Overview Metrics
+# --- ANALYSIS EXECUTION ---
+with st.spinner("🕵️ Running forensic detectors..."):
+    duplicates = detect_duplicate_payments(df_raw)
+    unusual_timing = detect_unusual_timing(df_raw)
+    round_num = detect_round_number_abuse(df_raw)
+    threshold_flags = detect_threshold_avoidance(df_raw, threshold=threshold)
+    benford_data = analyze_benford(df_raw)
+    fuzzy_vendors = detect_fuzzy_duplicates(df_raw)
+
+# --- RESULTS DASHBOARD ---
 st.subheader("📊 Analysis Insights")
 col1, col2, col3, col4 = st.columns(4)
 
