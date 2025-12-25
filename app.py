@@ -107,8 +107,17 @@ else:
         st.stop()
 
 if df_raw is None or df_raw.empty:
-    st.info("Awaiting valid data mapping to begin analysis...")
+    st.info("👋 **Welcome! To begin the forensic analysis:**")
+    st.markdown("""
+    1. **Upload your CSV** in the sidebar.
+    2. **Check the Mapping**: Look at the sidebar 🗺️. If you see warnings about dates or amounts, you likely need to select different columns.
+    3. **Verify Date Format**: Ensure your date column is in a standard format (e.g., YYYY-MM-DD or MM/DD/YYYY).
+    """)
+    if uploaded_file:
+        st.error(f"🚨 **Mapping Error**: 0 valid rows found in '{uploaded_file.name}' after mapping and cleanup. Please check your column selections in the sidebar.")
     st.stop()
+else:
+    st.success(f"✅ Successfully loaded and mapped **{len(df_raw)}** valid transactions.")
 
 # Analysis execution
 duplicates = detect_duplicate_payments(df_raw)
