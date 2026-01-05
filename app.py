@@ -26,6 +26,11 @@ threshold = st.sidebar.slider("Approval Threshold", min_value=1000, max_value=50
 uploaded_file = st.sidebar.file_uploader("Upload Transaction CSV", type="csv")
 
 st.sidebar.markdown("---")
+if st.sidebar.button("🎯 Load Sample Data", use_container_width=True):
+    st.session_state.use_sample_data = True
+    st.rerun()
+
+st.sidebar.markdown("---")
 st.sidebar.header("🎨 User Preferences")
 currency = st.sidebar.selectbox("Currency Symbol", ["$", "R", "€", "£", "₦", "¥", "Br"], index=1)
 decimal_points = st.sidebar.number_input("Decimal Precision", min_value=0, max_value=4, value=2)
@@ -41,6 +46,9 @@ def format_currency(val):
 # State Management
 if "analysis_triggered" not in st.session_state:
     st.session_state.analysis_triggered = False
+
+if "use_sample_data" not in st.session_state:
+    st.session_state.use_sample_data = False
 
 def reset_analysis():
     st.session_state.analysis_triggered = False
@@ -110,28 +118,58 @@ def load_and_map_data(file):
 
 if uploaded_file is not None:
     df_raw, df_full = load_and_map_data(uploaded_file)
-else:
+    st.session_state.use_sample_data = False  # Clear sample flag when real data uploaded
+elif st.session_state.use_sample_data:
     sample_path = os.path.join(os.path.dirname(__file__), "data/sample_transactions.csv")
     if os.path.exists(sample_path):
         df_raw, df_full = load_and_map_data(sample_path)
     else:
-        st.error("No data found. Please upload a CSV.")
+        st.error("Sample data file not found.")
         st.stop()
+else:
+    # No data loaded - show welcome screen
+    df_raw = None
+    df_full = None
 
 if df_raw is None or df_raw.empty:
-    st.info("👋 **Welcome! To begin the forensic analysis:**")
-    st.markdown("""
-    1. **Upload your CSV** in the sidebar.
-    2. **Map the Essentials**: Look at the sidebar 🗺️. Select the correct columns for Date, Amount, and Payee.
-    3. **Verify Date Format**: Ensure your date column is in a standard format (e.g., YYYY-MM-DD).
-    """)
+    st.markdown("### 👋 Welcome to the Financial Anomaly Detector!")
+    st.markdown("Detect duplicates, unusual timing, threshold avoidance, and more in your transaction data.")
+    
+    st.markdown("---")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### 📤 Upload Your Data")
+        st.markdown("""
+        Ready to analyze your transactions?
+        1. Click **"Browse files"** in the sidebar
+        2. Upload your CSV file
+        3. Map the columns and run analysis
+        """)
+        st.info("💡 Your CSV should contain: Date, Amount, and Vendor/Payee columns")
+    
+    with col2:
+        st.markdown("#### 🎯 Try Sample Data")
+        st.markdown("""
+        Want to see how it works first?
+        1. Click **"🎯 Load Sample Data"** in the sidebar
+        2. Explore the features with 6 demo transactions
+        3. See real anomaly detection in action
+        """)
+        st.success("✨ Perfect for learning the system!")
+    
     if uploaded_file:
         st.error(f"🚨 **Mapping Error**: 0 valid rows found in '{uploaded_file.name}'. Please check your column selections in the sidebar.")
+    
     st.stop()
 
 # --- PRE-ANALYSIS PREVIEW ---
 if not st.session_state.analysis_triggered:
-    st.success(f"✅ Mapping OK: **{len(df_raw)}** valid transactions identified.")
+    if st.session_state.use_sample_data:
+        st.info(f"📊 **Sample Mode** - {len(df_raw)} demo transactions loaded. Upload your CSV to analyze real data.")
+    else:
+        st.success(f"✅ **Your Data** - {len(df_raw)} valid transactions identified.")
     
     with st.expander("🔍 **Data Inspector** (Review all columns in your file)", expanded=True):
         st.write("Use this table to find which headers contain your transaction dates and amounts.")
