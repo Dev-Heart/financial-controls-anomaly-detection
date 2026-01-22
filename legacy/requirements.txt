@@ -1,7 +1,7 @@
 pandas
 numpy
-flask
+matplotlib
+streamlit
 thefuzz
 python-Levenshtein
 python-dotenv
-matplotlib

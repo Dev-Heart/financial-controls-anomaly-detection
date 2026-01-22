@@ -1,80 +1,36 @@
-# Financial Controls & Anomaly Detection System
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Overview
-This project is a portfolio-ready **Financial Controls & Anomaly Detection System** designed to bridge the gap between accounting, internal controls, and data analytics. It processes general ledger or transaction data to identify potential fraud, errors, or control bypasses.
+## Getting Started
 
-## Key Features
-- **Duplicate Payment Detection**: Identifies potential double payments based on identical amount, vendor, and date.
-- **Unusual Timing Detection**: Flags transactions occurring on weekends or outside normal business hours.
-- **Round-Number Abuse**: Detects transactions with exact round numbers (multiple of 1,000), a common red flag in manual fraud.
-- **Threshold Avoidance**: Highlights transactions just below the \$10,000 approval threshold, indicating possible attempts to bypass manager review.
-- **Benford's Law Analysis**: Mathematical anomaly detection based on leading-digit frequency to identify artificial data patterns.
-- **Fuzzy Vendor Matching**: Automated detection of similar vendor names (e.g., "ABC Corp" vs "ABC Corp.") to catch potential ghost accounts.
-- **Visual Analytics**: Interactive Streamlit dashboard with automated bar charts and forensic diagnostic plots.
-- **User Personalization**: Toggle between different currency regions ($, €, £, ₦) and numerical precision settings.
-- **Reporting & Logging**: Exports a Risk Summary (CSV) and maintains a persistent audit trail (Log).
-- **Automated Verification**: Includes a comprehensive suite of unit tests to ensure detection accuracy.
-- **Configurable Settings**: Customizable thresholds via `config.json`.
+First, run the development server:
 
-## Project Structure
-```text
-financial-controls-anomaly-detection/
-├── data/                 # Sample and input CSV transactions
-├── scripts/              # Core logic and tests
-│   ├── main.py           # Main analysis script
-│   └── test_detector.py # Automated unit tests
-├── outputs/              # Exported reports, logs, and charts
-├── config.json           # System configuration and thresholds
-├── requirements.txt      # Project dependencies
-└── venv/                 # Python virtual environment
-```
-
-## Setup & Usage
-
-### 1. Prerequisites
-- Python 3.9.6
-
-### 2. Setup
-Clone the repository and set up the virtual environment:
 ```bash
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-### 3. Run Analysis
-Execute the detector from the project root:
-```bash
-python3 scripts/main.py
-```
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 4. Launch Interactive Dashboard
-Run the Streamlit app for a visual, interactive experience:
-```bash
-streamlit run app.py
-```
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### 5. Run Tests
-Verify system stability with automated tests:
-```bash
-python3 scripts/test_detector.py
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-### 5. Review Results
-- Check the terminal output for an immediate risk summary.
-- View `outputs/anomaly_summary.png` for a graphical overview.
-- View `outputs/risk_summary.csv` for a structured report.
-- Review `outputs/processing.log` for execution details.
+## Learn More
 
-## Recruiter Value
-This system demonstrates:
-- **Accounting Logic**: Understanding of internal controls and fraud risk factors.
-- **Data Reasoning**: Ability to translate control objectives into technical detection rules.
-- **Automation Skills**: Using Python/Pandas to scale auditing and risk management.
-## Disclaimer
-This tool and example outputs are for educational and portfolio purposes only. The scenarios, assumptions, and outputs are illustrative and should not be interpreted as professional financial advice.
+To learn more about Next.js, take a look at the following resources:
 
-Developed by **Divine Heart**. For inquiries, feedback, or collaboration, visit [GitHub](https://github.com/Dev-Heart).
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
